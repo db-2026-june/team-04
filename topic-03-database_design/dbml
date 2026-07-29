@@ -87,6 +87,8 @@ Table Customers {
   first_name varchar(50)
   last_name varchar(50)
   email_address varchar(255) [unique]
+  phone varchar(20) [null]
+  delivery_address varchar(255) [null]
 }
 
 Table Orders {
@@ -149,4 +151,5 @@ Table Recipe {
   item_id integer [ref: > MenuItems.item_id]
   ingredient_id integer [ref: > Ingredients.ingredient_id]
   quantity_required "decimal(10, 2)"
+  unit varchar(30)
 }
