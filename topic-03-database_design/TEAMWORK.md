@@ -22,7 +22,7 @@ Viktoriia відповідала за клієнтів, відгуки, інгр
 
 Фінальна ER-діаграма:
 
-[ER Diagram](./ERDiadram.png)
+![ER Diagram](./ERDiagram.png)
 
 Версія: **Final Version**
 
