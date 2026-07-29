@@ -1,5 +1,7 @@
 # TEAMWORK - Topic 03 (Database Design)
 
+# TEAMWORK - Topic 03 (Database Design)
+
 ## Склад команди
 
 - Команда: Team 4
@@ -17,6 +19,41 @@
 Над завданням фактично працювали двоє учасників — Viktoriia Hryvniak та Artem Rudnytskyi, оскільки інші учасники не мали можливості долучитися. Тому ми розподілили таблиці між собою та трохи спростили початковий обсяг завдання.
 
 Viktoriia відповідала за клієнтів, відгуки, інгредієнти, постачальників та запаси. Artem відповідав за локації, персонал, ролі, меню, замовлення та рецепти.
+
+## ER-діаграма
+
+Фінальна ER-діаграма:
+
+[ER Diagram](./ERDiadram.png)
+
+Версія: **Final Version**
+
+У фінальну ER-діаграму інтегровані такі таблиці:
+
+- Locations
+- Roles
+- Staff
+- MenuCategory
+- MenuItems
+- Orders
+- OrderDetails
+- Recipe
+- Customers
+- CustomerFeedback
+- Ingredients
+- Suppliers
+- BasicInventory
+
+Основні зв’язки між таблицями:
+
+- Staff пов’язана з Roles та Locations.
+- MenuItems пов’язана з MenuCategory.
+- Recipe пов’язує MenuItems та Ingredients.
+- Orders пов’язана з Locations, Customers та Staff.
+- OrderDetails пов’язує Orders та MenuItems.
+- Ingredients пов’язана з Suppliers.
+- BasicInventory пов’язана з Ingredients та Locations.
+- CustomerFeedback пов’язана з Customers, Orders та Locations.
 
 ## Коротке обґрунтування вибору початкового варіанта
 
