@@ -39,8 +39,22 @@
 
 // --- ТАБЛИЦІ ---
 
+// ============================================================
+// СХЕМА БАЗИ ДАНИХ: Мережа закладів харчування
+// ============================================================
+// Основні блоки:
+//  - Локації та персонал: Locations, Roles, Staff
+//  - Меню: MenuCategory, MenuItems
+//  - Замовлення: Orders, OrderDetails, Customers
+//  - Склад/постачання: Suppliers, Ingredients, BasicInventory, Recipe
+//  - Зворотний зв'язок: CustomerFeedback
+// ============================================================
+
+// Довідник закладів (філій) мережі.
+// PK: location_id — суррогатний первинний ключ, автоінкремент.
+// Батьківська таблиця для Staff, Orders, BasicInventory, CustomerFeedback.
 Table Locations {
-  location_id integer [pk, increment, unique]
+  location_id integer [pk, increment, unique]   // PK
   location_city varchar(50)
   location_street varchar(100)
   location_building integer
@@ -51,59 +65,80 @@ Table Locations {
   seating_capacity integer
 }
 
+// Довідник посад персоналу (офіціант, кухар, менеджер тощо).
+// PK: role_id.
 Table Roles {
-  role_id integer [pk, increment, unique]
+  role_id integer [pk, increment, unique]   // PK
   role_name varchar(50)
 }
 
+// Співробітники закладів.
+// PK: employee_id.
+// FK: role_id -> Roles.role_id       (N:1, кожен співробітник має одну роль)
+// FK: location_id -> Locations.location_id (N:1, працює в одному закладі)
 Table Staff {
-  employee_id integer [pk, increment, unique]
-  role_id integer [ref: > Roles.role_id]
-  location_id integer [ref: > Locations.location_id]
+  employee_id integer [pk, increment, unique]   // PK
+  role_id integer [ref: > Roles.role_id]         // FK -> Roles
+  location_id integer [ref: > Locations.location_id] // FK -> Locations
   employee_fname varchar(50)
   employee_lname varchar(50)
   employee_phone varchar(20)
   employee_email varchar(254)
-  hourly_rate "decimal(10, 2)"
+  hourly_rate "decimal(10, 2)"   // погодинна ставка
 }
 
+// Категорії позицій меню (напої, десерти, основні страви тощо).
+// PK: category_id.
 Table MenuCategory {
-  category_id integer [pk, increment, unique]
+  category_id integer [pk, increment, unique]   // PK
   category_name varchar(50)
 }
 
+// Позиції меню (страви/напої, що продаються).
+// PK: item_id.
+// FK: category_id -> MenuCategory.category_id (N:1, кожна страва належить одній категорії)
 Table MenuItems {
-  item_id integer [pk, increment, unique]
-  category_id integer [ref: > MenuCategory.category_id]
+  item_id integer [pk, increment, unique]   // PK
+  category_id integer [ref: > MenuCategory.category_id] // FK -> MenuCategory
   item_name varchar(100)
   item_description varchar(500)
-  preparation_time integer
-  cost_price "decimal(10, 2)"
-  sell_price "decimal(10, 2)"
+  preparation_time integer      // час приготування, хв
+  cost_price "decimal(10, 2)"   // собівартість
+  sell_price "decimal(10, 2)"   // ціна продажу
 }
 
+// Клієнти (гості/замовники).
+// PK: customer_id.
+// email_address — унікальний (додатковий unique-ключ, не PK).
 Table Customers {
-  customer_id integer [pk, increment, unique]
+  customer_id integer [pk, increment, unique]   // PK
   first_name varchar(50)
   last_name varchar(50)
-  email_address varchar(255) [unique]
+  email_address varchar(255) [unique]   // унікальний ключ (natural key)
   phone varchar(20) [null]
-  delivery_address varchar(255) [null]
+  delivery_address varchar(255) [null]  // адреса доставки (для delivery-замовлень)
 }
 
+// Замовлення.
+// PK: order_id.
+// FK: location_id -> Locations.location_id (N:1, у якому закладі оформлено)
+// FK: customer_id -> Customers.customer_id (N:1, хто замовив)
+// FK: employee_id -> Staff.employee_id     (N:1, хто обслуговував/прийняв)
 Table Orders {
-  order_id integer [pk, increment, unique]
-  location_id integer [ref: > Locations.location_id]
-  customer_id integer [ref: > Customers.customer_id]
-  employee_id integer [ref: > Staff.employee_id]
-  order_status varchar(20)
-  order_type varchar(8)
+  order_id integer [pk, increment, unique]   // PK
+  location_id integer [ref: > Locations.location_id] // FK -> Locations
+  customer_id integer [ref: > Customers.customer_id] // FK -> Customers
+  employee_id integer [ref: > Staff.employee_id]     // FK -> Staff
+  order_status varchar(20)     // напр. new / in_progress / completed / cancelled
+  order_type varchar(8)        // напр. dine_in / takeaway / delivery
   order_datetime datetime
   payment_method varchar(20)
 }
 
+// Постачальники інгредієнтів.
+// PK: supplier_id.
 Table Suppliers {
-  supplier_id integer [pk, increment, unique]
+  supplier_id integer [pk, increment, unique]   // PK
   supplier_name varchar(100)
   contact_person varchar(100)
   phone varchar(30)
@@ -111,45 +146,68 @@ Table Suppliers {
   address varchar(255)
 }
 
+// Довідник інгредієнтів (сировини), що використовуються в рецептах.
+// PK: ingredient_id.
+// FK: supplier_id -> Suppliers.supplier_id (N:1, основний постачальник інгредієнта)
 Table Ingredients {
-  ingredient_id integer [pk, increment, unique]
+  ingredient_id integer [pk, increment, unique]   // PK
   ingredient_name varchar(100)
-  unit varchar(20)
+  unit varchar(20)              // одиниця виміру (кг, л, шт...)
   cost_per_unit decimal
-  supplier_id integer [ref: > Suppliers.supplier_id]
+  supplier_id integer [ref: > Suppliers.supplier_id] // FK -> Suppliers
 }
 
+// Складський облік інгредієнтів по кожній локації.
+// PK: inventory_id.
+// FK: ingredient_id -> Ingredients.ingredient_id (N:1, який інгредієнт)
+// FK: location_id -> Locations.location_id       (N:1, на якому складі/локації)
 Table BasicInventory {
-  inventory_id integer [pk, increment, unique]
-  ingredient_id integer [ref: > Ingredients.ingredient_id]
-  location_id integer [ref: > Locations.location_id]
+  inventory_id integer [pk, increment, unique]   // PK
+  ingredient_id integer [ref: > Ingredients.ingredient_id] // FK -> Ingredients
+  location_id integer [ref: > Locations.location_id]       // FK -> Locations
   quantity_in_stock decimal [default: 0]
-  minimum_quantity decimal [default: 0]
+  minimum_quantity decimal [default: 0]   // поріг для сповіщення про закупівлю
   last_updated timestamp [default: `CURRENT_TIMESTAMP`]
   expiration_date date [null]
-  storage_location varchar(100) [null]
+  storage_location varchar(100) [null]    // фізичне місце зберігання (стелаж, холодильник...)
 }
 
+// Відгуки клієнтів.
+// PK: customerfeedback_id.
+// FK: customer_id -> Customers.customer_id (N:1, хто залишив відгук)
+// FK: location_id -> Locations.location_id (N:1, про яку локацію)
+// FK: order_id -> Orders.order_id          (N:1, до якого замовлення відноситься)
 Table CustomerFeedback {
-  customerfeedback_id integer [pk, increment, unique]
-  customer_id integer [ref: > Customers.customer_id]
-  location_id integer [ref: > Locations.location_id]
-  order_id integer [ref: > Orders.order_id]
-  rating integer
+  customerfeedback_id integer [pk, increment, unique]   // PK
+  customer_id integer [ref: > Customers.customer_id] // FK -> Customers
+  location_id integer [ref: > Locations.location_id]  // FK -> Locations
+  order_id integer [ref: > Orders.order_id]           // FK -> Orders
+  rating integer          // оцінка, напр. 1-5
   comment varchar(255)
   feedback_date datetime
 }
 
+// Деталі замовлення — зв'язуюча (асоціативна) таблиця M:N
+// між Orders та MenuItems: одне замовлення містить кілька позицій меню,
+// одна позиція меню може входити в багато замовлень.
+// Композитний первинний ключ: (order_id, item_id) — у коді нижче
+// FK: order_id -> Orders.order_id
+// FK: item_id -> MenuItems.item_id
 Table OrderDetails {
-  order_id integer [ref: > Orders.order_id]
-  item_id integer [ref: > MenuItems.item_id]
+  order_id integer [ref: > Orders.order_id]     // FK -> Orders (частина композитного PK)
+  item_id integer [ref: > MenuItems.item_id]    // FK -> MenuItems (частина композитного PK)
   quantity "decimal(10, 2)"
   total_price "decimal(10, 2)"
 }
 
+// Рецептура: скільки якого інгредієнта потрібно на одну позицію меню.
+// Зв'язуюча (асоціативна) таблиця M:N між MenuItems та Ingredients.
+// Композитний первинний ключ: (item_id, ingredient_id) — так само
+// FK: item_id -> MenuItems.item_id
+// FK: ingredient_id -> Ingredients.ingredient_id
 Table Recipe {
-  item_id integer [ref: > MenuItems.item_id]
-  ingredient_id integer [ref: > Ingredients.ingredient_id]
+  item_id integer [ref: > MenuItems.item_id]           // FK -> MenuItems (частина композитного PK)
+  ingredient_id integer [ref: > Ingredients.ingredient_id] // FK -> Ingredients (частина композитного PK)
   quantity_required "decimal(10, 2)"
   unit varchar(30)
 }
