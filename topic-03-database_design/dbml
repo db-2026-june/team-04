@@ -36,3 +36,115 @@
 
 
 // Вставте ваш DBML-код нижче 👇
+
+Table locations {
+  location_id integer [pk, increment, unique]
+  location_city varchar(50)
+  location_street varchar(100)
+  location_building integer
+  location_phone varchar(20)
+  location_email varchar(254)
+  opening_time time
+  closing_time time
+  seating_capacity integer
+}
+
+Table roles {
+  role_id integer [pk, increment, unique]
+  role_name varchar(50)
+}
+
+Table staff {
+  employee_id integer [pk, increment, unique]
+  role_id integer [ref: > roles.role_id]
+  location_id integer [ref: > locations.location_id]
+  employee_fname varchar(50)
+  employee_lname varchar(50)
+  employee_phone varchar(20)
+  employee_email varchar(254)
+  hourly_rate "decimal(10, 2)"
+}
+
+Table menu_category {
+  category_id integer [pk, increment, unique]
+  category_name varchar(50)
+}
+
+Table menu_items {
+  item_id integer [pk, increment, unique]
+  category_id integer [ref: > menu_category.category_id]
+  item_name varchar(100)
+  item_description varchar(500)
+  preparation_time integer
+  cost_price "decimal(10, 2)"
+  sell_price "decimal(10, 2)"
+}
+
+Table Customers {
+  customer_id integer [pk, increment, unique]
+  first_name varchar(50)
+  last_name varchar(50)
+  email_address varchar(255) [unique]
+}
+
+Table orders {
+  order_id integer [pk, increment, unique]
+  location_id integer [ref: > locations.location_id]
+  customer_id integer [ref: > Customers.customer_id]
+  employee_id integer [ref: > staff.employee_id]
+  order_status varchar(20)
+  order_type varchar(8)
+  order_datetime datetime
+  payment_method varchar(20)
+}
+
+Table Suppliers {
+  supplier_id integer [pk, increment, unique]
+  supplier_name varchar(100)
+  contact_person varchar(100)
+  phone varchar(30)
+  email varchar(100)
+  address varchar(255)
+}
+
+Table Ingredients {
+  ingredient_id integer [pk, increment, unique]
+  ingredient_name varchar(100)
+  unit varchar(20)
+  cost_per_unit decimal
+  supplier_id integer [ref: > Suppliers.supplier_id]
+}
+
+Table BasicInventory {
+  inventory_id integer [pk, increment, unique]
+  ingredient_id integer [ref: > Ingredients.ingredient_id]
+  location_id integer [ref: > locations.location_id]
+  quantity_in_stock decimal [default: 0]
+  minimum_quantity decimal [default: 0]
+  last_updated timestamp [default: `CURRENT_TIMESTAMP`]
+  expiration_date date [null]
+  storage_location varchar(100) [null]
+}
+
+Table CustomerFeedback {
+  customerfeedback_id integer [pk, increment, unique]
+  customer_id integer [ref: > Customers.customer_id]
+  location_id integer [ref: > locations.location_id]
+  order_id integer [ref: > orders.order_id]
+  rating integer
+  comment varchar(255)
+  feedback_date datetime
+}
+
+Table order_details {
+  order_id integer [ref: > orders.order_id]
+  item_id integer [ref: > menu_items.item_id]
+  quantity "decimal(10, 2)"
+  total_price "decimal(10, 2)"
+}
+
+Table recipe {
+  item_id integer [ref: > menu_items.item_id]
+  ingredient_id integer [ref: > Ingredients.ingredient_id]
+  quantity_required "decimal(10, 2)"
+}
