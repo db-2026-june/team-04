@@ -1,7 +1,5 @@
 # TEAMWORK - Topic 03 (Database Design)
 
-# TEAMWORK - Topic 03 (Database Design)
-
 ## Склад команди
 
 - Команда: Team 4
