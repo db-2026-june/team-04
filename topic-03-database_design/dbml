@@ -37,7 +37,9 @@
 
 // Вставте ваш DBML-код нижче 👇
 
-Table locations {
+// --- ТАБЛИЦІ ---
+
+Table Locations {
   location_id integer [pk, increment, unique]
   location_city varchar(50)
   location_street varchar(100)
@@ -49,15 +51,15 @@ Table locations {
   seating_capacity integer
 }
 
-Table roles {
+Table Roles {
   role_id integer [pk, increment, unique]
   role_name varchar(50)
 }
 
-Table staff {
+Table Staff {
   employee_id integer [pk, increment, unique]
-  role_id integer [ref: > roles.role_id]
-  location_id integer [ref: > locations.location_id]
+  role_id integer [ref: > Roles.role_id]
+  location_id integer [ref: > Locations.location_id]
   employee_fname varchar(50)
   employee_lname varchar(50)
   employee_phone varchar(20)
@@ -65,14 +67,14 @@ Table staff {
   hourly_rate "decimal(10, 2)"
 }
 
-Table menu_category {
+Table MenuCategory {
   category_id integer [pk, increment, unique]
   category_name varchar(50)
 }
 
-Table menu_items {
+Table MenuItems {
   item_id integer [pk, increment, unique]
-  category_id integer [ref: > menu_category.category_id]
+  category_id integer [ref: > MenuCategory.category_id]
   item_name varchar(100)
   item_description varchar(500)
   preparation_time integer
@@ -87,11 +89,11 @@ Table Customers {
   email_address varchar(255) [unique]
 }
 
-Table orders {
+Table Orders {
   order_id integer [pk, increment, unique]
-  location_id integer [ref: > locations.location_id]
+  location_id integer [ref: > Locations.location_id]
   customer_id integer [ref: > Customers.customer_id]
-  employee_id integer [ref: > staff.employee_id]
+  employee_id integer [ref: > Staff.employee_id]
   order_status varchar(20)
   order_type varchar(8)
   order_datetime datetime
@@ -118,7 +120,7 @@ Table Ingredients {
 Table BasicInventory {
   inventory_id integer [pk, increment, unique]
   ingredient_id integer [ref: > Ingredients.ingredient_id]
-  location_id integer [ref: > locations.location_id]
+  location_id integer [ref: > Locations.location_id]
   quantity_in_stock decimal [default: 0]
   minimum_quantity decimal [default: 0]
   last_updated timestamp [default: `CURRENT_TIMESTAMP`]
@@ -129,22 +131,22 @@ Table BasicInventory {
 Table CustomerFeedback {
   customerfeedback_id integer [pk, increment, unique]
   customer_id integer [ref: > Customers.customer_id]
-  location_id integer [ref: > locations.location_id]
-  order_id integer [ref: > orders.order_id]
+  location_id integer [ref: > Locations.location_id]
+  order_id integer [ref: > Orders.order_id]
   rating integer
   comment varchar(255)
   feedback_date datetime
 }
 
-Table order_details {
-  order_id integer [ref: > orders.order_id]
-  item_id integer [ref: > menu_items.item_id]
+Table OrderDetails {
+  order_id integer [ref: > Orders.order_id]
+  item_id integer [ref: > MenuItems.item_id]
   quantity "decimal(10, 2)"
   total_price "decimal(10, 2)"
 }
 
-Table recipe {
-  item_id integer [ref: > menu_items.item_id]
+Table Recipe {
+  item_id integer [ref: > MenuItems.item_id]
   ingredient_id integer [ref: > Ingredients.ingredient_id]
   quantity_required "decimal(10, 2)"
 }
